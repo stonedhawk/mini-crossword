@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Mini Crossword</title>
   <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -580,9 +583,8 @@
           
           <main className="container">
             {gameWon && (
-              <div className="congrats" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.</span>
-                <button className="btn" onClick={handlePlayNext}>Play Next</button>
+              <div className="congrats">
+                Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.
               </div>
             )}
             <div className="puzzle-area">
@@ -592,6 +594,7 @@
                     <button className="btn" onClick={handleCheck}>Check</button>
                     <button className="btn" onClick={handleReveal}>Reveal</button>
                     <button className="btn" onClick={handleClear}>Clear</button>
+                    <button className="btn" onClick={handlePlayNext}>Next ➔</button>
                   </div>
                   <div className="timer">{formatTime(timerState.seconds)}</div>
                 </div>
