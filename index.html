@@ -181,6 +181,54 @@
       display: inline-block;
       width: 1.5rem;
     }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      padding: 0.25rem 0.75rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background-color: var(--bg-color);
+    }
+
+    .timer {
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cell-value.error {
+      color: #e53e3e;
+      font-weight: 700;
+    }
+
+    .congrats {
+      background-color: #c6f6d5;
+      color: #2f855a;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-weight: bold;
+      border: 1px solid #9ae6b4;
+    }
   </style>
 </head>
 <body>
@@ -308,10 +356,51 @@
       );
       const [activeCell, setActiveCell] = useState(null); // [r, c]
       const [direction, setDirection] = useState('across'); // 'across' or 'down'
+      
+      const [checkedCells, setCheckedCells] = useState(new Set());
+      const [gameWon, setGameWon] = useState(false);
+      const [timerState, setTimerState] = useState({ started: false, seconds: 0 });
 
       const dateStr = new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
+
+      // Timer effect
+      useEffect(() => {
+        let interval;
+        if (timerState.started && !gameWon) {
+          interval = setInterval(() => {
+            setTimerState(prev => ({ ...prev, seconds: prev.seconds + 1 }));
+          }, 1000);
+        }
+        return () => clearInterval(interval);
+      }, [timerState.started, gameWon]);
+
+      const formatTime = (totalSeconds) => {
+        const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const s = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      };
+
+      // Check Win Condition
+      useEffect(() => {
+        let isFull = true;
+        let isCorrect = true;
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            if (initialLayout[r][c] === 0) {
+              if (gridState[r][c] === '') {
+                isFull = false;
+              } else if (gridState[r][c] !== currentPuzzle.answers[r][c]) {
+                isCorrect = false;
+              }
+            }
+          }
+        }
+        if (isFull && isCorrect && !gameWon) {
+          setGameWon(true);
+        }
+      }, [gridState, initialLayout, currentPuzzle, gameWon]);
 
       // Compute puzzle cell numbers and word start coordinates
       const puzzleSpecs = useMemo(() => {
@@ -385,7 +474,7 @@
       }, [initialLayout]);
 
       const handleCellClick = (r, c) => {
-        if (initialLayout[r][c] === 1) return;
+        if (initialLayout[r][c] === 1 || gameWon) return;
         
         if (activeCell && activeCell[0] === r && activeCell[1] === c) {
           setDirection(prev => prev === 'across' ? 'down' : 'across');
@@ -410,8 +499,13 @@
       };
 
       const handleKeyDown = useCallback((e) => {
-        if (!activeCell) return;
+        if (!activeCell || gameWon) return;
         
+        // Start timer on first input
+        if (!timerState.started && e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+          setTimerState(prev => ({ ...prev, started: true }));
+        }
+
         const [r, c] = activeCell;
         
         if (e.key === 'Tab') {
@@ -424,6 +518,13 @@
           const newGrid = [...gridState.map(row => [...row])];
           newGrid[r][c] = e.key.toUpperCase();
           setGridState(newGrid);
+          
+          if (checkedCells.has(`${r}-${c}`)) {
+            const newChecked = new Set(checkedCells);
+            newChecked.delete(`${r}-${c}`);
+            setCheckedCells(newChecked);
+          }
+          
           setActiveCell(getNextCell(r, c, direction, 1));
           return;
         }
@@ -433,12 +534,22 @@
            if (newGrid[r][c] !== '') {
              newGrid[r][c] = '';
              setGridState(newGrid);
+             if (checkedCells.has(`${r}-${c}`)) {
+               const newChecked = new Set(checkedCells);
+               newChecked.delete(`${r}-${c}`);
+               setCheckedCells(newChecked);
+             }
            } else {
              const prevCell = getNextCell(r, c, direction, -1);
              setActiveCell(prevCell);
              const clearGrid = [...gridState.map(row => [...row])];
              clearGrid[prevCell[0]][prevCell[1]] = '';
              setGridState(clearGrid);
+             if (checkedCells.has(`${prevCell[0]}-${prevCell[1]}`)) {
+               const newChecked = new Set(checkedCells);
+               newChecked.delete(`${prevCell[0]}-${prevCell[1]}`);
+               setCheckedCells(newChecked);
+             }
            }
            return;
         }
@@ -484,10 +595,47 @@
       };
 
       const handleClueClick = (dir, num) => {
+        if (gameWon) return;
         const startCoord = puzzleSpecs.wordStarts[dir][num];
         if (startCoord) {
           setActiveCell(startCoord);
           setDirection(dir);
+        }
+      };
+
+      const handleCheck = () => {
+        const newChecked = new Set();
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            if (initialLayout[r][c] === 0 && gridState[r][c] !== '' && gridState[r][c] !== currentPuzzle.answers[r][c]) {
+              newChecked.add(`${r}-${c}`);
+            }
+          }
+        }
+        setCheckedCells(newChecked);
+      };
+
+      const handleReveal = () => {
+        const newGrid = [...gridState.map(row => [...row])];
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            if (initialLayout[r][c] === 0) {
+              newGrid[r][c] = currentPuzzle.answers[r][c];
+            }
+          }
+        }
+        setGridState(newGrid);
+        setCheckedCells(new Set());
+        if (!timerState.started) setTimerState(prev => ({ ...prev, started: true }));
+      };
+
+      const handleClear = () => {
+        if (confirm("Clear the entire puzzle?")) {
+           setGridState(Array(5).fill().map(() => Array(5).fill('')));
+           setCheckedCells(new Set());
+           setTimerState({ started: false, seconds: 0 });
+           setGameWon(false);
+           setActiveCell(null);
         }
       };
 
@@ -499,43 +647,59 @@
           </header>
           
           <main className="container">
+            {gameWon && (
+              <div className="congrats">
+                Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.
+              </div>
+            )}
             <div className="puzzle-area">
-              <div className="grid-container">
-                {initialLayout.map((row, rIndex) => (
-                  row.map((cellType, cIndex) => {
-                    const isBlack = cellType === 1;
-                    const cellKey = `${rIndex}-${cIndex}`;
-                    const num = puzzleSpecs.numbers[cellKey];
-                    
-                    let cellClass = 'cell';
-                    if (isBlack) cellClass += ' black';
-                    else if (isActive(rIndex, cIndex)) cellClass += ' active';
-                    else if (isInActiveWord(rIndex, cIndex)) cellClass += ' highlight';
-                    
-                    return (
-                      <div 
-                        key={cellKey} 
-                        className={cellClass}
-                        onClick={() => handleCellClick(rIndex, cIndex)}
-                        style={{
-                          backgroundColor: isBlack ? 'var(--black-cell)' : 
-                                           isActive(rIndex, cIndex) ? 'var(--accent)' :
-                                           isInActiveWord(rIndex, cIndex) ? 'var(--active-word)' : 'white',
-                          color: isActive(rIndex, cIndex) ? 'white' : 'black'
-                        }}
-                      >
-                        {!isBlack && num && (
-                           <span className="cell-number" style={{ color: isActive(rIndex, cIndex) ? 'white' : 'black' }}>
-                             {num}
-                           </span>
-                        )}
-                        {!isBlack && (
-                           <span className="cell-value">{gridState[rIndex][cIndex]}</span>
-                        )}
-                      </div>
-                    );
-                  })
-                ))}
+              <div className="grid-and-controls">
+                <div className="toolbar">
+                  <div className="btn-group">
+                    <button className="btn" onClick={handleCheck}>Check</button>
+                    <button className="btn" onClick={handleReveal}>Reveal</button>
+                    <button className="btn" onClick={handleClear}>Clear</button>
+                  </div>
+                  <div className="timer">{formatTime(timerState.seconds)}</div>
+                </div>
+                <div className="grid-container">
+                  {initialLayout.map((row, rIndex) => (
+                    row.map((cellType, cIndex) => {
+                      const isBlack = cellType === 1;
+                      const cellKey = `${rIndex}-${cIndex}`;
+                      const num = puzzleSpecs.numbers[cellKey];
+                      const isError = checkedCells.has(cellKey);
+                      
+                      let cellClass = 'cell';
+                      if (isBlack) cellClass += ' black';
+                      else if (isActive(rIndex, cIndex)) cellClass += ' active';
+                      else if (isInActiveWord(rIndex, cIndex)) cellClass += ' highlight';
+                      
+                      return (
+                        <div 
+                          key={cellKey} 
+                          className={cellClass}
+                          onClick={() => handleCellClick(rIndex, cIndex)}
+                          style={{
+                            backgroundColor: isBlack ? 'var(--black-cell)' : 
+                                             isActive(rIndex, cIndex) ? 'var(--accent)' :
+                                             isInActiveWord(rIndex, cIndex) ? 'var(--active-word)' : 'white',
+                            color: isActive(rIndex, cIndex) ? 'white' : 'black'
+                          }}
+                        >
+                          {!isBlack && num && (
+                             <span className="cell-number" style={{ color: isActive(rIndex, cIndex) ? 'white' : 'black' }}>
+                               {num}
+                             </span>
+                          )}
+                          {!isBlack && (
+                             <span className={`cell-value ${isError ? 'error' : ''}`}>{gridState[rIndex][cIndex]}</span>
+                          )}
+                        </div>
+                      );
+                    })
+                  ))}
+                </div>
               </div>
               
               <div className="clues-container">
