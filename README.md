@@ -1,6 +1,6 @@
 # Mini Crossword
 
-![Screenshot placeholder](https://via.placeholder.com/800x400?text=Mini+Crossword)
+![Mini Crossword Screenshot](./screenshot.png)
 
 A browser-based 5x5 Mini Crossword game built with React. Play a rotating set of daily puzzles with full keyboard interaction.
 
