@@ -101,6 +101,11 @@
       text-transform: uppercase;
       cursor: pointer;
       user-select: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    
+    .cell-value {
+      transition: color 0.15s ease;
     }
     
     .cell.black {
@@ -114,6 +119,7 @@
       left: 2px;
       font-size: 10px;
       line-height: 1;
+      transition: color 0.15s ease;
     }
     
     footer {
@@ -167,6 +173,7 @@
       line-height: 1.4;
       font-size: 1rem;
       margin-bottom: 0.25rem;
+      transition: background-color 0.15s ease;
     }
 
     .clues-column li:hover {
@@ -203,6 +210,7 @@
       font-size: 0.9rem;
       cursor: pointer;
       font-weight: 500;
+      transition: background-color 0.15s ease;
     }
 
     .btn:hover {
@@ -228,6 +236,15 @@
       text-align: center;
       font-weight: bold;
       border: 1px solid #9ae6b4;
+    }
+    
+    .keyboard-hints {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      color: #718096;
+      font-size: 0.85rem;
     }
   </style>
 </head>
@@ -375,6 +392,14 @@
         }
         return () => clearInterval(interval);
       }, [timerState.started, gameWon]);
+
+      // Scroll active clue into view
+      useEffect(() => {
+        const activeClue = document.querySelector('.active-clue');
+        if (activeClue) {
+          activeClue.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, [activeCell, direction]);
 
       const formatTime = (totalSeconds) => {
         const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
@@ -699,6 +724,10 @@
                       );
                     })
                   ))}
+                </div>
+                
+                <div className="keyboard-hints">
+                  <small><strong>Shortcuts:</strong> Space/Click toggles direction • Arrows move • Tab shifts axis</small>
                 </div>
               </div>
               
