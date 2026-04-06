@@ -1,0 +1,24 @@
+{
+  "name": "mini-crossword",
+  "version": "1.0.0",
+  "description": "![Screenshot placeholder](https://via.placeholder.com/800x400?text=Mini+Crossword)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/game.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stonedhawk/mini-crossword.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/stonedhawk/mini-crossword/issues"
+  },
+  "homepage": "https://github.com/stonedhawk/mini-crossword#readme",
+  "dependencies": {
+    "puppeteer": "^24.40.0"
+  }
+}
