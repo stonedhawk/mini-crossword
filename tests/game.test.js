@@ -47,9 +47,9 @@ const assert = require('assert');
     console.log("✔ Reveal completes board.");
 
     // Test 3: Play Next button
-    const nextBtn = await page.$$eval('button', btns => Array.from(btns).find(b => b.textContent === 'Play Next') !== undefined);
+    const nextBtn = await page.$$eval('button', btns => Array.from(btns).find(b => b.textContent === 'Next ➔') !== undefined);
     assert.ok(nextBtn, "Play Next button must appear.");
-    await clickButton('Play Next');
+    await clickButton('Next ➔');
     
     // Should reset board
     await new Promise(r => setTimeout(r, 100));
