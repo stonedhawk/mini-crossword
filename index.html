@@ -131,10 +131,9 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useCallback } = React;
 
     const App = () => {
-      // Just an initial hardcoded 5x5 layout for Step 1
       // 0 = white cell, 1 = black cell
       const initialLayout = [
         [0, 0, 0, 0, 1],
@@ -152,12 +151,133 @@
         "4-1": 9
       };
 
+      const [gridState, setGridState] = useState(
+        Array(5).fill().map(() => Array(5).fill(''))
+      );
+      const [activeCell, setActiveCell] = useState(null); // [r, c]
+      const [direction, setDirection] = useState('across'); // 'across' or 'down'
+
       const dateStr = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
+
+      const handleCellClick = (r, c) => {
+        if (initialLayout[r][c] === 1) return;
+        
+        if (activeCell && activeCell[0] === r && activeCell[1] === c) {
+          setDirection(prev => prev === 'across' ? 'down' : 'across');
+        } else {
+          setActiveCell([r, c]);
+        }
+      };
+
+      const getNextCell = (r, c, dir, advance = 1) => {
+        let nr = r;
+        let nc = c;
+        if (dir === 'across') {
+          nc += advance;
+        } else {
+          nr += advance;
+        }
+        
+        if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && initialLayout[nr][nc] === 0) {
+          return [nr, nc];
+        }
+        return [r, c]; // If blocked or out of bounds, don't advance
+      };
+
+      const handleKeyDown = useCallback((e) => {
+        if (!activeCell) return;
+        
+        const [r, c] = activeCell;
+        
+        // Handle Tab / Shift+Tab logic (simplified for now to just change orientation)
+        // A complete Tab logic would find the next word start.
+        if (e.key === 'Tab') {
+           e.preventDefault();
+           setDirection(prev => prev === 'across' ? 'down' : 'across');
+           return;
+        }
+
+        // Handle letters
+        if (/^[a-zA-Z]$/.test(e.key)) {
+          const newGrid = [...gridState.map(row => [...row])];
+          newGrid[r][c] = e.key.toUpperCase();
+          setGridState(newGrid);
+          
+          setActiveCell(getNextCell(r, c, direction, 1));
+          return;
+        }
+        
+        // Handle Backspace
+        if (e.key === 'Backspace') {
+           const newGrid = [...gridState.map(row => [...row])];
+           if (newGrid[r][c] !== '') {
+             newGrid[r][c] = '';
+             setGridState(newGrid);
+           } else {
+             const prevCell = getNextCell(r, c, direction, -1);
+             setActiveCell(prevCell);
+             const clearGrid = [...gridState.map(row => [...row])];
+             clearGrid[prevCell[0]][prevCell[1]] = '';
+             setGridState(clearGrid);
+           }
+           return;
+        }
+        
+        // Space to toggle
+        if (e.key === ' ') {
+          e.preventDefault();
+          setDirection(prev => prev === 'across' ? 'down' : 'across');
+          return;
+        }
+        
+        // Arrows
+        if (e.key === 'ArrowRight') {
+          if (c < 4 && initialLayout[r][c+1] === 0) setActiveCell([r, c+1]);
+        } else if (e.key === 'ArrowLeft') {
+          if (c > 0 && initialLayout[r][c-1] === 0) setActiveCell([r, c-1]);
+        } else if (e.key === 'ArrowDown') {
+          if (r < 4 && initialLayout[r+1][c] === 0) setActiveCell([r+1, c]);
+        } else if (e.key === 'ArrowUp') {
+          if (r > 0 && initialLayout[r-1][c] === 0) setActiveCell([r-1, c]);
+        }
+
+      }, [activeCell, direction, gridState]);
+
+      useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+      }, [handleKeyDown]);
+
+      const isActive = (r, c) => activeCell && activeCell[0] === r && activeCell[1] === c;
+      
+      const isInActiveWord = (r, c) => {
+        if (!activeCell) return false;
+        if (isActive(r, c)) return false;
+        
+        const [ar, ac] = activeCell;
+        
+        if (direction === 'across' && r === ar) {
+          let match = true;
+          const minC = Math.min(c, ac);
+          const maxC = Math.max(c, ac);
+          for(let i=minC; i<=maxC; i++) if (initialLayout[r][i] === 1) match = false;
+          return match;
+        }
+        
+        if (direction === 'down' && c === ac) {
+          let match = true;
+          const minR = Math.min(r, ar);
+          const maxR = Math.max(r, ar);
+          for(let i=minR; i<=maxR; i++) if (initialLayout[i][c] === 1) match = false;
+          return match;
+        }
+        return false;
+      };
 
       return (
         <React.Fragment>
@@ -175,12 +295,31 @@
                     const cellKey = `${rIndex}-${cIndex}`;
                     const num = defaultNumbers[cellKey];
                     
+                    let cellClass = 'cell';
+                    if (isBlack) cellClass += ' black';
+                    else if (isActive(rIndex, cIndex)) cellClass += ' active';
+                    else if (isInActiveWord(rIndex, cIndex)) cellClass += ' highlight';
+                    
                     return (
                       <div 
                         key={cellKey} 
-                        className={`cell ${isBlack ? 'black' : ''}`}
+                        className={cellClass}
+                        onClick={() => handleCellClick(rIndex, cIndex)}
+                        style={{
+                          backgroundColor: isBlack ? 'var(--black-cell)' : 
+                                           isActive(rIndex, cIndex) ? 'var(--accent)' :
+                                           isInActiveWord(rIndex, cIndex) ? 'var(--active-word)' : 'white',
+                          color: isActive(rIndex, cIndex) ? 'white' : 'black'
+                        }}
                       >
-                        {!isBlack && num && <span className="cell-number">{num}</span>}
+                        {!isBlack && num && (
+                           <span className="cell-number" style={{ color: isActive(rIndex, cIndex) ? 'white' : 'black' }}>
+                             {num}
+                           </span>
+                        )}
+                        {!isBlack && (
+                           <span className="cell-value">{gridState[rIndex][cIndex]}</span>
+                        )}
                       </div>
                     );
                   })
