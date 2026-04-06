@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Crossword</title>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    :root {
+      --bg-color: #fafafa;
+      --border-color: #000000;
+      --cell-size: 50px;
+      --black-cell: #1a1a1a;
+      --accent: #5a67d8;
+      --active-word: #e8eaff;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #111;
+    }
+    
+    header {
+      background-color: #1a1a1a;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    
+    .date {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    
+    .puzzle-area {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .puzzle-area {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+    
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(5, var(--cell-size));
+      grid-template-rows: repeat(5, var(--cell-size));
+      gap: 0;
+      border: 2px solid var(--border-color);
+      background-color: var(--border-color);
+      margin: 0 auto;
+    }
+    
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      background-color: white;
+      border: 1px solid var(--border-color);
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .cell.black {
+      background-color: var(--black-cell);
+      cursor: default;
+    }
+    
+    .cell-number {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      font-size: 10px;
+      line-height: 1;
+    }
+    
+    footer {
+      padding: 1rem;
+      text-align: right;
+    }
+    
+    .signature {
+      font-size: 11px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const App = () => {
+      // Just an initial hardcoded 5x5 layout for Step 1
+      // 0 = white cell, 1 = black cell
+      const initialLayout = [
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0]
+      ];
+      
+      const defaultNumbers = {
+        "0-0": 1, "0-1": 2, "0-2": 3, "0-3": 4,
+        "1-0": 5, "1-4": 6,
+        "2-0": 7,
+        "3-0": 8,
+        "4-1": 9
+      };
+
+      const dateStr = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      return (
+        <React.Fragment>
+          <header>
+            <h1>Mini Crossword</h1>
+            <div className="date">{dateStr}</div>
+          </header>
+          
+          <main className="container">
+            <div className="puzzle-area">
+              <div className="grid-container">
+                {initialLayout.map((row, rIndex) => (
+                  row.map((cellType, cIndex) => {
+                    const isBlack = cellType === 1;
+                    const cellKey = `${rIndex}-${cIndex}`;
+                    const num = defaultNumbers[cellKey];
+                    
+                    return (
+                      <div 
+                        key={cellKey} 
+                        className={`cell ${isBlack ? 'black' : ''}`}
+                      >
+                        {!isBlack && num && <span className="cell-number">{num}</span>}
+                      </div>
+                    );
+                  })
+                ))}
+              </div>
+            </div>
+          </main>
+          
+          <footer>
+            <div className="signature">Created by Stonedhawk (Rahul)</div>
+          </footer>
+        </React.Fragment>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
