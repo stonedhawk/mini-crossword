@@ -125,31 +125,183 @@
       font-size: 11px;
       color: #888;
     }
+
+    .clues-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    @media (min-width: 768px) {
+      .clues-container {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+    }
+
+    .clues-column {
+      flex: 1;
+    }
+
+    .clues-column h3 {
+      margin-top: 0;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+    }
+
+    .clues-column ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .clues-column li {
+      padding: 0.5rem;
+      cursor: pointer;
+      border-radius: 4px;
+      line-height: 1.4;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .clues-column li:hover {
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    .clues-column li.active-clue {
+      background-color: var(--active-word);
+    }
+
+    .clues-column strong {
+      display: inline-block;
+      width: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useCallback } = React;
+    const { useState, useEffect, useCallback, useMemo } = React;
+
+    const puzzles = [
+      {
+        id: 1,
+        layout: [
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+        ],
+        answers: [
+          ['A', 'C', 'O', 'R', 'N'],
+          ['C', 'O', 'L', 'O', 'R'],
+          ['O', 'L', 'I', 'V', 'E'],
+          ['R', 'O', 'V', 'E', 'R'],
+          ['N', 'E', 'R', 'D', 'S']
+        ],
+        clues: {
+          across: { 1: "Oak tree nut", 6: "Red or blue", 7: "Martini garnish", 8: "Mars explorer", 9: "Geeks" },
+          down: { 1: "Oak tree nut", 2: "Red or blue", 3: "Martini garnish", 4: "Mars explorer", 5: "Geeks" }
+        }
+      },
+      {
+        id: 2,
+        layout: [
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+        ],
+        answers: [
+          ['S', 'P', 'A', 'R', 'E'],
+          ['P', 'A', 'N', 'E', 'L'],
+          ['A', 'N', 'G', 'L', 'E'],
+          ['R', 'E', 'L', 'I', 'C'],
+          ['E', 'L', 'E', 'C', 'T']
+        ],
+        clues: {
+          across: { 1: "Bowling achievement", 6: "Comic strip box", 7: "Geometry topic", 8: "Historical object", 9: "Choose in a voting booth" },
+          down: { 1: "Bowling achievement", 2: "Comic strip box", 3: "Geometry topic", 4: "Historical object", 5: "Choose in a voting booth" }
+        }
+      },
+      {
+        id: 3,
+        layout: [
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [1, 0, 0, 0, 1]
+        ],
+        answers: [
+          ['F', 'L', 'O', 'W', 'S'],
+          ['O', 'P', 'E', 'R', 'A'],
+          ['C', 'A', 'B', 'I', 'N'],
+          ['U', 'S', 'E', 'R', 'S'],
+          ['.', 'S', 'Y', 'N', '.']
+        ],
+        clues: {
+          across: { 1: "Moves like a river", 6: "Place for an aria", 7: "Log house", 8: "App customers", 9: "Abbr. for synonym" },
+          down: { 1: "Pay attention", 2: "Spanish plurals", 3: "Follows rules", 4: "Write incorrectly", 5: "Socially awkward" }
+        }
+      },
+      {
+        id: 4,
+        layout: [
+          [0, 0, 0, 0, 1],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [1, 0, 0, 0, 0]
+        ],
+        answers: [
+          ['M', 'A', 'P', 'S', '.'],
+          ['O', 'B', 'O', 'E', 'S'],
+          ['S', 'L', 'A', 'N', 'G'],
+          ['S', 'E', 'N', 'S', 'E'],
+          ['.', 'M', 'E', 'E', 'T']
+        ],
+        clues: {
+          across: { 1: "Cartographer's tools", 5: "Woodwinds", 6: "Informal speech", 7: "Common ___", 8: "Introduce" },
+          down: { 1: "Plant on a rock", 2: "Competent", 3: "Poem form", 4: "School subj.", 5: "Gets" }
+        }
+      },
+      {
+        id: 5,
+        layout: [
+          [1, 0, 0, 0, 1],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [1, 0, 0, 0, 1]
+        ],
+        answers: [
+          ['.', 'C', 'A', 'T', '.'],
+          ['W', 'A', 'L', 'E', 'S'],
+          ['O', 'M', 'E', 'N', 'S'],
+          ['R', 'E', 'N', 'T', 'S'],
+          ['.', 'S', 'A', 'T', '.']
+        ],
+        clues: {
+          across: { 1: "Feline", 4: "UK nation", 6: "Signs of the future", 7: "Leases", 8: "Took a chair" },
+          down: { 1: "Desert animal", 2: "Extraterrestrial", 3: "Camp shelters", 4: "Conflict", 5: "Snake sound" }
+        }
+      }
+    ];
 
     const App = () => {
-      // 0 = white cell, 1 = black cell
-      const initialLayout = [
-        [0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0]
-      ];
-      
-      const defaultNumbers = {
-        "0-0": 1, "0-1": 2, "0-2": 3, "0-3": 4,
-        "1-0": 5, "1-4": 6,
-        "2-0": 7,
-        "3-0": 8,
-        "4-1": 9
-      };
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const puzzleIndex = dayOfYear % puzzles.length;
+      const currentPuzzle = puzzles[puzzleIndex];
+      const initialLayout = currentPuzzle.layout;
 
       const [gridState, setGridState] = useState(
         Array(5).fill().map(() => Array(5).fill(''))
@@ -158,11 +310,79 @@
       const [direction, setDirection] = useState('across'); // 'across' or 'down'
 
       const dateStr = new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
+
+      // Compute puzzle cell numbers and word start coordinates
+      const puzzleSpecs = useMemo(() => {
+        const numbers = {};
+        const wordStarts = { across: {}, down: {} };
+        const cellToWordMap = {}; 
+        let currentNum = 1;
+
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            if (initialLayout[r][c] === 1) continue;
+            let needsNumber = false;
+            let isAcrossStart = false;
+            let isDownStart = false;
+
+            // Across start?
+            if (c === 0 || initialLayout[r][c - 1] === 1) {
+              if (c < 4 && initialLayout[r][c + 1] === 0) {
+                isAcrossStart = true;
+                needsNumber = true;
+              }
+            }
+            // Down start?
+            if (r === 0 || initialLayout[r - 1][c] === 1) {
+              if (r < 4 && initialLayout[r + 1][c] === 0) {
+                isDownStart = true;
+                needsNumber = true;
+              }
+            }
+
+            if (needsNumber) {
+              numbers[`${r}-${c}`] = currentNum;
+              if (isAcrossStart) wordStarts.across[currentNum] = [r, c];
+              if (isDownStart) wordStarts.down[currentNum] = [r, c];
+              currentNum++;
+            }
+          }
+        }
+        
+        // Map individual cells to their across/down word numbers
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            if (initialLayout[r][c] === 1) continue;
+            cellToWordMap[`${r}-${c}`] = { across: null, down: null };
+            
+            // Find across word number
+            let ac = c;
+            while (ac >= 0 && initialLayout[r][ac] === 0) {
+              const num = numbers[`${r}-${ac}`];
+              if (num && wordStarts.across[num]) {
+                cellToWordMap[`${r}-${c}`].across = num;
+                break;
+              }
+              ac--;
+            }
+            
+            // Find down word number
+            let ar = r;
+            while (ar >= 0 && initialLayout[ar][c] === 0) {
+              const num = numbers[`${ar}-${c}`];
+              if (num && wordStarts.down[num]) {
+                cellToWordMap[`${r}-${c}`].down = num;
+                break;
+              }
+              ar--;
+            }
+          }
+        }
+        
+        return { numbers, wordStarts, cellToWordMap };
+      }, [initialLayout]);
 
       const handleCellClick = (r, c) => {
         if (initialLayout[r][c] === 1) return;
@@ -186,7 +406,7 @@
         if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && initialLayout[nr][nc] === 0) {
           return [nr, nc];
         }
-        return [r, c]; // If blocked or out of bounds, don't advance
+        return [r, c];
       };
 
       const handleKeyDown = useCallback((e) => {
@@ -194,25 +414,20 @@
         
         const [r, c] = activeCell;
         
-        // Handle Tab / Shift+Tab logic (simplified for now to just change orientation)
-        // A complete Tab logic would find the next word start.
         if (e.key === 'Tab') {
            e.preventDefault();
            setDirection(prev => prev === 'across' ? 'down' : 'across');
            return;
         }
 
-        // Handle letters
         if (/^[a-zA-Z]$/.test(e.key)) {
           const newGrid = [...gridState.map(row => [...row])];
           newGrid[r][c] = e.key.toUpperCase();
           setGridState(newGrid);
-          
           setActiveCell(getNextCell(r, c, direction, 1));
           return;
         }
         
-        // Handle Backspace
         if (e.key === 'Backspace') {
            const newGrid = [...gridState.map(row => [...row])];
            if (newGrid[r][c] !== '') {
@@ -228,14 +443,12 @@
            return;
         }
         
-        // Space to toggle
         if (e.key === ' ') {
           e.preventDefault();
           setDirection(prev => prev === 'across' ? 'down' : 'across');
           return;
         }
         
-        // Arrows
         if (e.key === 'ArrowRight') {
           if (c < 4 && initialLayout[r][c+1] === 0) setActiveCell([r, c+1]);
         } else if (e.key === 'ArrowLeft') {
@@ -246,7 +459,7 @@
           if (r > 0 && initialLayout[r-1][c] === 0) setActiveCell([r-1, c]);
         }
 
-      }, [activeCell, direction, gridState]);
+      }, [activeCell, direction, gridState, initialLayout]);
 
       useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -259,24 +472,23 @@
         if (!activeCell) return false;
         if (isActive(r, c)) return false;
         
-        const [ar, ac] = activeCell;
+        const activeWordNum = puzzleSpecs.cellToWordMap[`${activeCell[0]}-${activeCell[1]}`][direction];
+        const thisWordNum = puzzleSpecs.cellToWordMap[`${r}-${c}`][direction];
         
-        if (direction === 'across' && r === ar) {
-          let match = true;
-          const minC = Math.min(c, ac);
-          const maxC = Math.max(c, ac);
-          for(let i=minC; i<=maxC; i++) if (initialLayout[r][i] === 1) match = false;
-          return match;
+        return activeWordNum && thisWordNum && activeWordNum === thisWordNum;
+      };
+
+      const getActiveWordNumber = () => {
+        if (!activeCell) return null;
+        return puzzleSpecs.cellToWordMap[`${activeCell[0]}-${activeCell[1]}`][direction];
+      };
+
+      const handleClueClick = (dir, num) => {
+        const startCoord = puzzleSpecs.wordStarts[dir][num];
+        if (startCoord) {
+          setActiveCell(startCoord);
+          setDirection(dir);
         }
-        
-        if (direction === 'down' && c === ac) {
-          let match = true;
-          const minR = Math.min(r, ar);
-          const maxR = Math.max(r, ar);
-          for(let i=minR; i<=maxR; i++) if (initialLayout[i][c] === 1) match = false;
-          return match;
-        }
-        return false;
       };
 
       return (
@@ -293,7 +505,7 @@
                   row.map((cellType, cIndex) => {
                     const isBlack = cellType === 1;
                     const cellKey = `${rIndex}-${cIndex}`;
-                    const num = defaultNumbers[cellKey];
+                    const num = puzzleSpecs.numbers[cellKey];
                     
                     let cellClass = 'cell';
                     if (isBlack) cellClass += ' black';
@@ -324,6 +536,37 @@
                     );
                   })
                 ))}
+              </div>
+              
+              <div className="clues-container">
+                <div className="clues-column">
+                  <h3>Across</h3>
+                  <ul>
+                    {Object.entries(currentPuzzle.clues.across).map(([num, text]) => (
+                      <li 
+                        key={`across-${num}`}
+                        className={direction === 'across' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
+                        onClick={() => handleClueClick('across', num)}
+                      >
+                        <strong>{num}</strong> {text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="clues-column">
+                  <h3>Down</h3>
+                  <ul>
+                    {Object.entries(currentPuzzle.clues.down).map(([num, text]) => (
+                      <li 
+                        key={`down-${num}`}
+                        className={direction === 'down' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
+                        onClick={() => handleClueClick('down', num)}
+                      >
+                        <strong>{num}</strong> {text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </main>
