@@ -251,120 +251,13 @@
 <body>
   <div id="root"></div>
 
+  <script src="puzzles.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
 
-    const puzzles = [
-      {
-        id: 1,
-        layout: [
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0]
-        ],
-        answers: [
-          ['A', 'C', 'O', 'R', 'N'],
-          ['C', 'O', 'L', 'O', 'R'],
-          ['O', 'L', 'I', 'V', 'E'],
-          ['R', 'O', 'V', 'E', 'R'],
-          ['N', 'E', 'R', 'D', 'S']
-        ],
-        clues: {
-          across: { 1: "Oak tree nut", 6: "Red or blue", 7: "Martini garnish", 8: "Mars explorer", 9: "Geeks" },
-          down: { 1: "Oak tree nut", 2: "Red or blue", 3: "Martini garnish", 4: "Mars explorer", 5: "Geeks" }
-        }
-      },
-      {
-        id: 2,
-        layout: [
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0]
-        ],
-        answers: [
-          ['S', 'P', 'A', 'R', 'E'],
-          ['P', 'A', 'N', 'E', 'L'],
-          ['A', 'N', 'G', 'L', 'E'],
-          ['R', 'E', 'L', 'I', 'C'],
-          ['E', 'L', 'E', 'C', 'T']
-        ],
-        clues: {
-          across: { 1: "Bowling achievement", 6: "Comic strip box", 7: "Geometry topic", 8: "Historical object", 9: "Choose in a voting booth" },
-          down: { 1: "Bowling achievement", 2: "Comic strip box", 3: "Geometry topic", 4: "Historical object", 5: "Choose in a voting booth" }
-        }
-      },
-      {
-        id: 3,
-        layout: [
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [1, 0, 0, 0, 1]
-        ],
-        answers: [
-          ['F', 'L', 'O', 'W', 'S'],
-          ['O', 'P', 'E', 'R', 'A'],
-          ['C', 'A', 'B', 'I', 'N'],
-          ['U', 'S', 'E', 'R', 'S'],
-          ['.', 'S', 'Y', 'N', '.']
-        ],
-        clues: {
-          across: { 1: "Moves like a river", 6: "Place for an aria", 7: "Log house", 8: "App customers", 9: "Abbr. for synonym" },
-          down: { 1: "Pay attention", 2: "Spanish plurals", 3: "Follows rules", 4: "Write incorrectly", 5: "Socially awkward" }
-        }
-      },
-      {
-        id: 4,
-        layout: [
-          [0, 0, 0, 0, 1],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [1, 0, 0, 0, 0]
-        ],
-        answers: [
-          ['M', 'A', 'P', 'S', '.'],
-          ['O', 'B', 'O', 'E', 'S'],
-          ['S', 'L', 'A', 'N', 'G'],
-          ['S', 'E', 'N', 'S', 'E'],
-          ['.', 'M', 'E', 'E', 'T']
-        ],
-        clues: {
-          across: { 1: "Cartographer's tools", 5: "Woodwinds", 6: "Informal speech", 7: "Common ___", 8: "Introduce" },
-          down: { 1: "Plant on a rock", 2: "Competent", 3: "Poem form", 4: "School subj.", 5: "Gets" }
-        }
-      },
-      {
-        id: 5,
-        layout: [
-          [1, 0, 0, 0, 1],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0],
-          [1, 0, 0, 0, 1]
-        ],
-        answers: [
-          ['.', 'C', 'A', 'T', '.'],
-          ['W', 'A', 'L', 'E', 'S'],
-          ['O', 'M', 'E', 'N', 'S'],
-          ['R', 'E', 'N', 'T', 'S'],
-          ['.', 'S', 'A', 'T', '.']
-        ],
-        clues: {
-          across: { 1: "Feline", 4: "UK nation", 6: "Signs of the future", 7: "Leases", 8: "Took a chair" },
-          down: { 1: "Desert animal", 2: "Extraterrestrial", 3: "Camp shelters", 4: "Conflict", 5: "Snake sound" }
-        }
-      }
-    ];
-
     const App = () => {
       const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-      const puzzleIndex = dayOfYear % puzzles.length;
+      const [puzzleIndex, setPuzzleIndex] = useState(dayOfYear % puzzles.length);
       const currentPuzzle = puzzles[puzzleIndex];
       const initialLayout = currentPuzzle.layout;
 
@@ -424,6 +317,7 @@
         }
         if (isFull && isCorrect && !gameWon) {
           setGameWon(true);
+          setTimerState(prev => ({ ...prev, started: false }));
         }
       }, [gridState, initialLayout, currentPuzzle, gameWon]);
 
@@ -628,7 +522,8 @@
         }
       };
 
-      const handleCheck = () => {
+      const handleCheck = (e) => {
+        if(e) e.currentTarget.blur();
         const newChecked = new Set();
         for (let r = 0; r < 5; r++) {
           for (let c = 0; c < 5; c++) {
@@ -640,7 +535,8 @@
         setCheckedCells(newChecked);
       };
 
-      const handleReveal = () => {
+      const handleReveal = (e) => {
+        if(e) e.currentTarget.blur();
         const newGrid = [...gridState.map(row => [...row])];
         for (let r = 0; r < 5; r++) {
           for (let c = 0; c < 5; c++) {
@@ -654,7 +550,8 @@
         if (!timerState.started) setTimerState(prev => ({ ...prev, started: true }));
       };
 
-      const handleClear = () => {
+      const handleClear = (e) => {
+        if(e) e.currentTarget.blur();
         if (confirm("Clear the entire puzzle?")) {
            setGridState(Array(5).fill().map(() => Array(5).fill('')));
            setCheckedCells(new Set());
@@ -662,6 +559,16 @@
            setGameWon(false);
            setActiveCell(null);
         }
+      };
+
+      const handlePlayNext = (e) => {
+        if(e) e.currentTarget.blur();
+        setPuzzleIndex((prev) => (prev + 1) % puzzles.length);
+        setGridState(Array(5).fill().map(() => Array(5).fill('')));
+        setCheckedCells(new Set());
+        setTimerState({ started: false, seconds: 0 });
+        setGameWon(false);
+        setActiveCell(null);
       };
 
       return (
@@ -673,8 +580,9 @@
           
           <main className="container">
             {gameWon && (
-              <div className="congrats">
-                Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.
+              <div className="congrats" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.</span>
+                <button className="btn" onClick={handlePlayNext}>Play Next</button>
               </div>
             )}
             <div className="puzzle-area">
