@@ -7,6 +7,10 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Mini Crossword</title>
+  <!-- Google Fonts: Playfair Display for vintage print serif styling, and Inter for clean sans-serif UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -17,59 +21,89 @@
     :root {
       --bg-color: #fafafa;
       --border-color: #000000;
-      --cell-size: 50px;
-      --black-cell: #1a1a1a;
+      --cell-size: 56px;
+      --black-cell: #121212;
       --accent: #5a67d8;
       --active-word: #e8eaff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
     }
     
     body {
       margin: 0;
       padding: 0;
       background-color: var(--bg-color);
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      color: #111;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
     }
     
     header {
-      background-color: #1a1a1a;
-      color: white;
-      padding: 1rem 2rem;
+      background-color: #111827;
+      color: #f9fafb;
+      padding: 1.25rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-bottom: 4px double #000000;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     
     header h1 {
       margin: 0;
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.8rem;
+      font-weight: 800;
       letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
     
     .date {
-      font-size: 0.9rem;
-      color: #ccc;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: #cbd5e1;
     }
     
     .container {
       flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      box-sizing: border-box;
+    }
+    
+    .congrats {
+      background-color: #d1fae5;
+      color: #065f46;
+      padding: 1.25rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: 2px solid #059669;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     
     .puzzle-area {
       display: flex;
       flex-direction: column;
-      gap: 2rem;
-      max-width: 800px;
+      gap: 2.5rem;
       width: 100%;
+      margin-top: 0.5rem;
     }
     
     @media (min-width: 768px) {
@@ -79,13 +113,23 @@
       }
     }
     
+    .grid-and-controls {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
     .grid-container {
       display: grid;
       grid-template-columns: repeat(5, var(--cell-size));
       grid-template-rows: repeat(5, var(--cell-size));
       gap: 0;
-      border: 2px solid var(--border-color);
+      border: 3px solid var(--border-color);
       background-color: var(--border-color);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
       margin: 0 auto;
     }
     
@@ -93,161 +137,226 @@
       width: var(--cell-size);
       height: var(--cell-size);
       background-color: white;
-      border: 1px solid var(--border-color);
+      border: 1px solid #e2e8f0;
       box-sizing: border-box;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.7rem;
+      font-weight: 700;
       text-transform: uppercase;
       cursor: pointer;
       user-select: none;
-      transition: background-color 0.15s ease, color 0.15s ease;
-    }
-    
-    .cell-value {
-      transition: color 0.15s ease;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .cell.black {
       background-color: var(--black-cell);
+      border: 1px solid var(--black-cell);
       cursor: default;
     }
     
     .cell-number {
       position: absolute;
-      top: 2px;
-      left: 2px;
+      top: 3px;
+      left: 4px;
       font-size: 10px;
+      font-weight: 600;
       line-height: 1;
+      color: var(--text-muted);
       transition: color 0.15s ease;
     }
     
-    footer {
-      padding: 1rem;
-      text-align: right;
+    .cell-value {
+      font-family: 'Inter', sans-serif;
+      margin-top: 6px;
+      transition: color 0.15s ease, transform 0.1s ease;
     }
     
-    .signature {
-      font-size: 11px;
-      color: #888;
+    .cell:not(.black):hover {
+      background-color: #f8fafc;
+      transform: scale(1.02);
+      z-index: 2;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-
+    
+    .cell-value.error {
+      color: #dc2626 !important;
+      font-weight: 800;
+      animation: shake 0.2s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn {
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      color: var(--border-color);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 0px rgba(0, 0, 0, 1);
+      position: relative;
+      top: 0;
+    }
+    
+    .btn:hover {
+      background-color: #f1f5f9;
+      top: -1px;
+      box-shadow: 0 3px 0px rgba(0, 0, 0, 1);
+    }
+    
+    .btn:active {
+      top: 1px;
+      box-shadow: 0 1px 0px rgba(0, 0, 0, 1);
+    }
+    
+    .timer {
+      font-weight: 700;
+      font-size: 1.15rem;
+      font-variant-numeric: tabular-nums;
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 0px rgba(0, 0, 0, 1);
+    }
+    
     .clues-container {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 2rem;
       flex: 1;
-      max-height: 400px;
+      width: 100%;
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      max-height: 440px;
       overflow-y: auto;
+      box-sizing: border-box;
     }
     
-    @media (min-width: 768px) {
-      .clues-container {
-        flex-direction: column;
-        gap: 1.5rem;
-      }
+    .clues-container::-webkit-scrollbar {
+      width: 6px;
     }
-
-    .clues-column {
-      flex: 1;
+    .clues-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
     }
-
+    .clues-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .clues-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
     .clues-column h3 {
       margin-top: 0;
+      margin-bottom: 1rem;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 800;
       border-bottom: 2px solid var(--border-color);
-      padding-bottom: 0.5rem;
-      font-size: 1.2rem;
+      padding-bottom: 0.4rem;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-
+    
     .clues-column ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-
+    
     .clues-column li {
-      padding: 0.5rem;
+      padding: 0.6rem 0.8rem;
       cursor: pointer;
       border-radius: 4px;
       line-height: 1.4;
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-      transition: background-color 0.15s ease;
-    }
-
-    .clues-column li:hover {
-      background-color: rgba(0,0,0,0.05);
-    }
-
-    .clues-column li.active-clue {
-      background-color: var(--active-word);
-    }
-
-    .clues-column strong {
-      display: inline-block;
-      width: 1.5rem;
-    }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 0.5rem;
-    }
-
-    .btn-group {
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+      transition: all 0.15s ease;
       display: flex;
       gap: 0.5rem;
+      border: 1px solid transparent;
     }
-
-    .btn {
-      background-color: white;
-      border: 1px solid var(--border-color);
-      padding: 0.25rem 0.75rem;
-      font-size: 0.9rem;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background-color 0.15s ease;
+    
+    .clues-column li:hover {
+      background-color: #f1f5f9;
+      border-color: #e2e8f0;
     }
-
-    .btn:hover {
-      background-color: var(--bg-color);
+    
+    .clues-column li.active-clue {
+      background-color: var(--active-word);
+      border-color: #cbd5e1;
+      font-weight: 600;
     }
-
-    .timer {
-      font-weight: bold;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .cell-value.error {
-      color: #e53e3e;
-      font-weight: 700;
-    }
-
-    .congrats {
-      background-color: #c6f6d5;
-      color: #2f855a;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #9ae6b4;
+    
+    .clues-column strong {
+      color: var(--accent);
+      min-width: 1.5rem;
+      display: inline-block;
     }
     
     .keyboard-hints {
       margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e2e8f0;
+      padding: 0.8rem 1.2rem;
+      border: 2px dashed #cbd5e1;
+      border-radius: 6px;
       text-align: center;
-      color: #718096;
+      background: #ffffff;
+      color: var(--text-muted);
       font-size: 0.85rem;
+      font-weight: 500;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .keyboard-hints strong {
+      color: var(--text-main);
+    }
+    
+    footer {
+      padding: 1.5rem;
+      text-align: right;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
+    }
+    
+    .signature {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+      letter-spacing: 0.2px;
     }
   </style>
 </head>
@@ -584,7 +693,7 @@
           <main className="container">
             {gameWon && (
               <div className="congrats">
-                Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.
+                🎉 Congratulations! You solved the puzzle in {formatTime(timerState.seconds)}.
               </div>
             )}
             <div className="puzzle-area">
@@ -624,9 +733,12 @@
                           }}
                         >
                           {!isBlack && num && (
-                             <span className="cell-number" style={{ color: isActive(rIndex, cIndex) ? 'white' : 'black' }}>
-                               {num}
-                             </span>
+                            <span 
+                              className="cell-number" 
+                              style={{ color: isActive(rIndex, cIndex) ? 'rgba(255,255,255,0.8)' : 'var(--text-muted)' }}
+                            >
+                              {num}
+                            </span>
                           )}
                           {!isBlack && (
                              <span className={`cell-value ${isError ? 'error' : ''}`}>{gridState[rIndex][cIndex]}</span>
