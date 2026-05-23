@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tech Stack](https://img.shields.io/badge/Tech%20Stack-React%20%7C%20HTML5%20%7C%20CSS3-blue)](https://react.dev)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/stonedhawk/mini-crossword)
+[![Dictionary](https://img.shields.io/badge/Dictionary-game--ready--dictionary-green)](https://github.com/stonedhawk/game-ready-dictionary)
 [![Single File App](https://img.shields.io/badge/architecture-Single%20File%20App-orange)](https://github.com/stonedhawk/mini-crossword)
 
 A premium, browser-based 5x5 Mini Crossword game built with React. Play a rotating set of daily puzzles with full keyboard interaction and a beautiful newspaper-editorial aesthetic.
@@ -20,6 +21,21 @@ A premium, browser-based 5x5 Mini Crossword game built with React. Play a rotati
 * **⏱️ Built-in Game Mechanics:** Full timer tracking (MM:SS format), real-time "Check Answers" error-flagging (highlights in red), and "Reveal Solution" mechanisms.
 * **📲 Fully Responsive:** Perfectly optimized layout that shifts elegantly from desktop side-by-side grids to vertical mobile stacks.
 * **⚡ Zero Build Pipeline:** Single file `index.html` structure leveraging CDN-loaded React and Babel. Zero configuration required to start!
+
+---
+
+## ⚡ Powered by Game-Ready Dictionary
+
+This game integrates our high-performance [game-ready-dictionary](https://github.com/stonedhawk/game-ready-dictionary) engine (published as `@rahulmrx/game-ready-dictionary` on npm) to power our premium in-game solving assistant and spelling validations.
+
+### Architectural Highlights
+- **🚀 $O(m)$ Trie Lookups:** All validations run in a fraction of a millisecond using an optimized trie structure, making lookups completely independent of the dictionary size.
+- **🛡️ Clean Vocabulary:** Sourced from ENABLE1 and SCOWL level 60, filtered to remove profanity and restricted trademarks.
+- **📦 Pre-compiled Small Tier:** Integrated as a compiled lightweight array (~7,000 common terms, only 67KB) to keep local loading fully offline-compatible and eliminate CORS fetch issues.
+
+### In-Game Lexical Features
+- **✓ Real-time Spellchecker:** The active word displays a dynamic badge (`✓ Valid Word`, `✗ Not in Dict`, or `⚠️ Typo?` for prefixes like `HZ...`) as you type, giving instant spelling feedback.
+- **💡 Dynamic Lexical Assistant:** If you get stuck, the helper uses wildcard search to scan the trie for matching words matching the grid pattern (e.g. `S.A.E` matches `SHARE`, `SPADE`, `STAGE`) and allows you to **autofill** the grid in one click!
 
 ---
 

@@ -358,11 +358,197 @@
       font-weight: 500;
       letter-spacing: 0.2px;
     }
+
+    /* Active Clue Banner */
+    .active-clue-banner {
+      width: 100%;
+      background: #f8fafc;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 0px rgba(0, 0, 0, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-sizing: border-box;
+      animation: fadeIn 0.2s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .active-clue-label {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    
+    .active-clue-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-main);
+      flex: 1;
+    }
+    
+    /* Validation Badges */
+    .validation-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      white-space: nowrap;
+      border: 1.5px solid currentColor;
+    }
+    
+    .validation-badge.valid {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .validation-badge.invalid {
+      background-color: #fef3c7;
+      color: #b45309;
+    }
+    
+    .validation-badge.typo {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      animation: pulse-glow 1.5s infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+    
+    /* Lexical Assistant */
+    .lexical-assistant {
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      width: 100%;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .lexical-assistant h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.4rem;
+    }
+    
+    .assistant-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    
+    .dict-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .dict-link:hover {
+      text-decoration: underline;
+    }
+    
+    .pattern-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      background: #f1f5f9;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
+    .pattern-display code {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    
+    .suggestions-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    
+    .suggestions-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    
+    .suggestion-btn {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.35rem 0.7rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 1.5px 0px rgba(0, 0, 0, 1);
+      position: relative;
+      top: 0;
+    }
+    
+    .suggestion-btn:hover {
+      background: var(--active-word);
+      border-color: var(--accent);
+      color: var(--accent);
+      top: -1px;
+      box-shadow: 0 2.5px 0px rgba(0, 0, 0, 1);
+    }
+    
+    .suggestion-btn:active {
+      top: 1px;
+      box-shadow: 0 0.5px 0px rgba(0, 0, 0, 1);
+    }
+    
+    .no-suggestions {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
+  <script src="dictionary-data.js"></script>
+  <script src="trie-engine.js"></script>
   <script src="puzzles.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
@@ -503,6 +689,82 @@
         
         return { numbers, wordStarts, cellToWordMap };
       }, [initialLayout]);
+
+      const trie = useMemo(() => new TrieEngine(window.DICTIONARY_WORDS || []), []);
+
+      const getActiveWordInfo = useCallback(() => {
+        if (!activeCell) return null;
+        const [r, c] = activeCell;
+        const wordNum = puzzleSpecs.cellToWordMap[`${r}-${c}`][direction];
+        if (!wordNum) return null;
+
+        // Find all cell coordinates for this word
+        const cells = [];
+        for (let row = 0; row < 5; row++) {
+          for (let col = 0; col < 5; col++) {
+            if (initialLayout[row][col] === 1) continue;
+            const thisWordNum = puzzleSpecs.cellToWordMap[`${row}-${col}`][direction];
+            if (thisWordNum === wordNum) {
+              cells.push({ r: row, c: col });
+            }
+          }
+        }
+
+        // Sort cells based on direction (across sorts by col, down sorts by row)
+        cells.sort((a, b) => direction === 'across' ? a.c - b.c : a.r - b.r);
+
+        const wordString = cells.map(cell => gridState[cell.r][cell.c]).join('');
+        const patternString = cells.map(cell => gridState[cell.r][cell.c] === '' ? '.' : gridState[cell.r][cell.c]).join('');
+        
+        return {
+          num: wordNum,
+          cells,
+          wordString,
+          patternString
+        };
+      }, [activeCell, direction, gridState, puzzleSpecs, initialLayout]);
+
+      const activeWordInfo = useMemo(() => getActiveWordInfo(), [getActiveWordInfo]);
+
+      const activeWordValidation = useMemo(() => {
+        if (!activeWordInfo) return null;
+        const { wordString } = activeWordInfo;
+        if (wordString.length === 5) {
+          const isValid = trie.validate(wordString);
+          return { status: isValid ? 'valid' : 'invalid', text: isValid ? 'Valid Word' : 'Not in Dict' };
+        } else if (wordString.length > 0) {
+          const isValidPrefix = trie.isPrefix(wordString);
+          return { status: isValidPrefix ? 'prefix' : 'typo', text: isValidPrefix ? '' : 'Typo?' };
+        }
+        return null;
+      }, [activeWordInfo, trie]);
+
+      const patternSuggestions = useMemo(() => {
+        if (!activeWordInfo) return [];
+        const { patternString } = activeWordInfo;
+        if (patternString === '.....') return [];
+        return trie.findPatternMatches(patternString, 8);
+      }, [activeWordInfo, trie]);
+
+      const handleApplySuggestion = (suggestion) => {
+        if (!activeWordInfo) return;
+        const newGrid = [...gridState.map(row => [...row])];
+        activeWordInfo.cells.forEach((cell, idx) => {
+          newGrid[cell.r][cell.c] = suggestion[idx].toUpperCase();
+        });
+        setGridState(newGrid);
+        
+        const newChecked = new Set(checkedCells);
+        activeWordInfo.cells.forEach(cell => {
+          newChecked.delete(`${cell.r}-${cell.c}`);
+        });
+        setCheckedCells(newChecked);
+        
+        // Start timer if not started
+        if (!timerState.started) {
+          setTimerState(prev => ({ ...prev, started: true }));
+        }
+      };
 
       const handleCellClick = (r, c) => {
         if (initialLayout[r][c] === 1 || gameWon) return;
@@ -698,6 +960,25 @@
             )}
             <div className="puzzle-area">
               <div className="grid-and-controls">
+                {activeWordInfo && (
+                  <div className="active-clue-banner">
+                    <span className="active-clue-label">
+                      {direction.toUpperCase()} {activeWordInfo.num}:
+                    </span>
+                    <span className="active-clue-text">
+                      {currentPuzzle.clues[direction][activeWordInfo.num]}
+                    </span>
+                    {activeWordValidation && activeWordValidation.text && (
+                      <span className={`validation-badge ${activeWordValidation.status}`}>
+                        {activeWordValidation.status === 'valid' && '✓ '}
+                        {activeWordValidation.status === 'invalid' && '✗ '}
+                        {activeWordValidation.status === 'typo' && '⚠️ '}
+                        {activeWordValidation.text}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <div className="toolbar">
                   <div className="btn-group">
                     <button className="btn" onClick={handleCheck}>Check</button>
@@ -722,15 +1003,15 @@
                       
                       return (
                         <div 
-                          key={cellKey} 
-                          className={cellClass}
-                          onClick={() => handleCellClick(rIndex, cIndex)}
-                          style={{
-                            backgroundColor: isBlack ? 'var(--black-cell)' : 
-                                             isActive(rIndex, cIndex) ? 'var(--accent)' :
-                                             isInActiveWord(rIndex, cIndex) ? 'var(--active-word)' : 'white',
-                            color: isActive(rIndex, cIndex) ? 'white' : 'black'
-                          }}
+                           key={cellKey} 
+                           className={cellClass}
+                           onClick={() => handleCellClick(rIndex, cIndex)}
+                           style={{
+                             backgroundColor: isBlack ? 'var(--black-cell)' : 
+                                              isActive(rIndex, cIndex) ? 'var(--accent)' :
+                                              isInActiveWord(rIndex, cIndex) ? 'var(--active-word)' : 'white',
+                             color: isActive(rIndex, cIndex) ? 'white' : 'black'
+                           }}
                         >
                           {!isBlack && num && (
                             <span 
@@ -754,35 +1035,76 @@
                 </div>
               </div>
               
-              <div className="clues-container">
-                <div className="clues-column">
-                  <h3>Across</h3>
-                  <ul>
-                    {Object.entries(currentPuzzle.clues.across).map(([num, text]) => (
-                      <li 
-                        key={`across-${num}`}
-                        className={direction === 'across' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
-                        onClick={() => handleClueClick('across', num)}
-                      >
-                        <strong>{num}</strong> {text}
-                      </li>
-                    ))}
-                  </ul>
+              <div className="sidebar-right" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', boxSizing: 'border-box' }}>
+                <div className="clues-container" style={{ maxHeight: '290px' }}>
+                  <div className="clues-column">
+                    <h3>Across</h3>
+                    <ul>
+                      {Object.entries(currentPuzzle.clues.across).map(([num, text]) => (
+                        <li 
+                          key={`across-${num}`}
+                          className={direction === 'across' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
+                          onClick={() => handleClueClick('across', num)}
+                        >
+                          <strong>{num}</strong> {text}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="clues-column">
+                    <h3>Down</h3>
+                    <ul>
+                      {Object.entries(currentPuzzle.clues.down).map(([num, text]) => (
+                        <li 
+                          key={`down-${num}`}
+                          className={direction === 'down' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
+                          onClick={() => handleClueClick('down', num)}
+                        >
+                          <strong>{num}</strong> {text}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="clues-column">
-                  <h3>Down</h3>
-                  <ul>
-                    {Object.entries(currentPuzzle.clues.down).map(([num, text]) => (
-                      <li 
-                        key={`down-${num}`}
-                        className={direction === 'down' && getActiveWordNumber() === Number(num) ? 'active-clue' : ''}
-                        onClick={() => handleClueClick('down', num)}
-                      >
-                        <strong>{num}</strong> {text}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+
+                {activeWordInfo && (
+                  <div className="lexical-assistant">
+                    <h3>
+                      <span className="icon">💡</span> Lexical Assistant
+                    </h3>
+                    <p className="assistant-desc">
+                      Powered by <a href="https://github.com/stonedhawk/game-ready-dictionary" target="_blank" className="dict-link">game-ready-dictionary</a>.
+                    </p>
+                    
+                    <div className="pattern-display">
+                      Pattern: <code>{activeWordInfo.patternString}</code>
+                    </div>
+                    
+                    {patternSuggestions.length > 0 ? (
+                      <div className="suggestions-section">
+                        <div className="suggestions-label">Suggestions (Click to autofill):</div>
+                        <div className="suggestions-list">
+                          {patternSuggestions.map(word => (
+                            <button 
+                              key={word} 
+                              className="suggestion-btn"
+                              onClick={() => handleApplySuggestion(word)}
+                              title="Click to autofill this word into the grid"
+                            >
+                              {word}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="no-suggestions">
+                        {activeWordInfo.patternString === '.....' 
+                          ? 'Start typing to see matching dictionary words!' 
+                          : 'No matching words found in the dictionary.'}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </main>
